@@ -5,8 +5,13 @@
 #include "Librarian.h"
 using namespace std;
 
+//Clears invalid input from the input buffer
 void clearInput() {
+
+	//Reset error flags
 	cin.clear();
+
+	//Remove remaining invalid input
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
@@ -200,13 +205,19 @@ void adminMenu(LibrarySystem& system, Admin* admin) {
 }
 
 int main() {
+
+	//Create the main library system object
 	LibrarySystem system;
 
+	//Create the default admin account
 	Admin* admin = new Admin("SuperAdmin");
+
+	//Add the admin to the system's user list
 	system.addUser(admin);
 
 	bool running = true;
 
+	//Main program loop
 	while (running) {
 		cout << "\n===== SMART LIBRARY SYSTEM =====\n";
 		cout << "1. Login\n";
@@ -215,6 +226,7 @@ int main() {
 
 		int mainChoice;
 
+		//Validate numeric input
 		if (!(cin >> mainChoice)) {
 			cout << "Invalid input. Please enter a number.\n";
 			clearInput();
@@ -222,17 +234,20 @@ int main() {
 		}
 		clearInput();
 
+		//Login option
 		if (mainChoice == 1) {
 			string name;
 			cout << "Enter your name: ";
 			getline(cin, name);
 
+			//Search for the user in the system
 			User* currentUser = system.findUser(name);
 			if (!currentUser) {
 				cout << "User not found.\n";
 				continue;
 			}
 
+			//Role-based menu selection
 			if (currentUser->getRole() == "Admin")
 				adminMenu(system, dynamic_cast<Admin*>(currentUser));
 
@@ -242,6 +257,8 @@ int main() {
 			else if (currentUser-> getRole() == "Librarian")
 				librarianMenu(system, dynamic_cast<Librarian*>(currentUser));
 		}
+
+		//Exit program
 		else if (mainChoice == 0) {
 			running = false;
 		}

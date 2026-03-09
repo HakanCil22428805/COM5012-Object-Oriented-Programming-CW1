@@ -1,0 +1,267 @@
+/*
+#include <iostream> //For input/output
+#include <vector> //For dynamic arrays
+#include <string> //For string handling
+#include <algorithm> //For find and remove_if
+using namespace std;
+
+//Global Status Array
+//Represents possible book states
+string Status[3] { "Available", "Borrowed", "Reserved" };
+
+class Book {
+private:
+	string title;
+	string author;
+	string status;
+
+public:
+	//Constructor initialises book  as Available
+	Book(string t, string a) : title(t), author(a), status(Status[0]) {}
+	string getTitle() const { return title; }
+	string getAuthor() const { return author; }
+	string getStatus() const { return status; }
+
+	//Setter for status
+	void setStatus(string newStatus) { status = newStatus; }
+
+	//Displays book details to console
+	void display() const {
+		cout << "Title: " << title << " | Author: " << author << " | Status: ";
+		if (status == Status[0]) cout << "Available";
+		else if (status == Status[1]) cout << "Borrowed";
+		else cout << "Reserved";
+		cout << endl;
+	}
+
+};
+
+class User {
+protected:
+	string name;
+
+public:
+	User(string n) : name(n) {}
+	virtual string getRole() const = 0;
+	virtual ~User() {}
+};
+
+class Member : public User {
+private:
+	vector<Book*> borrowedBooks; //Stores pointers to borrowed books
+	const int MAX_LIMIT = 5; //Borrow limit
+
+public:
+	Member(string n) : User(n) {}
+	string getRole() const override {
+		return "Member";
+	}
+
+	//Checks if member can borrow more books
+	bool canBorrow() const {
+		return borrowedBooks.size() < MAX_LIMIT;
+	}
+
+	void borrowBook(Book& book) {
+		
+		//Check availability
+		if (book.getStatus() != Status[0]) {
+			cout << "Book not available.\n";
+			return;
+		}
+
+		//Check borrow limit
+		if (!canBorrow()) {
+			cout << "Borrow limit reached.\n";
+			return; 
+		}
+
+		//Add to borrowed list and update status
+		borrowedBooks.push_back(&book);
+		book.setStatus(Status[1]);
+		cout << "Borrow successful.\n";
+	}
+
+	void returnBook(Book& book) {
+		
+		//Find book in borrowed list
+		auto it = find(borrowedBooks.begin(), borrowedBooks.end(), &book);
+		if (it != borrowedBooks.end()) {
+			borrowedBooks.erase(it);
+			book.setStatus(Status[0]);
+			cout << "Book returned successfully.\n";
+		}
+		else {
+			cout << "This book was not borrowed by the member.\n";
+		}
+	}
+
+	void reserveBook(Book& book) {
+
+		//Only allow reservation if currently borrowed
+		if (book.getStatus() == Status[1]) {
+			book.setStatus(Status[2]);
+			cout << "Book reserved.\n";
+		}
+		else {
+			cout << "Reservation not allowed.\n";
+		}
+	}
+};
+
+class Librarian : public User {
+public:
+	Librarian(string n) : User(n) {}
+	string getRole() const override {
+		return "Librarian";
+	}
+};
+
+class LibrarySystem {
+private:
+	vector<Book> books; //Stores all books in the system
+
+public:
+
+	//Adds new book to collection
+	void addBook(const string& title, const string& author) {
+		books.emplace_back(title, author);
+		//cout << "Book added successfully.\n";
+	}
+
+	//Removes book by title
+	void removeBook(const string& title) {
+
+		//remove_if shifts matching elements to end
+		auto it = remove_if(books.begin(), books.end(),
+			[&](Book& b) { return b.getTitle() == title; });
+
+		if (it != books.end()) {
+			books.erase(it, books.end());
+			cout << "Book removeed successfully.\n";
+		}
+		else {
+			cout << "Book not found.\n";
+		}
+	}
+
+	//Displays all books
+	void viewBooks() const {
+		if (books.empty()) {
+			cout << "No books available.\n";
+			return;
+		}
+
+		for (const auto& book : books) {
+			book.display();
+		}
+	}
+
+	//Searches by title or author
+	//Returns pointer to matching book
+	Book* searchBook(const string& keyword) {
+		for (auto& book : books) {
+			if (book.getTitle() == keyword || book.getAuthor() == keyword) {
+				return &book;
+			}
+		}
+		return nullptr;
+	}
+};
+
+int main() {
+	LibrarySystem library; //Create system instance
+	
+	Member member("Hakan");
+	Librarian librarian("Ollie");
+
+	library.addBook("1984", "George Orwell");
+	library.addBook("The Hobbit", "J.R.R Tolkien");
+
+	int choice;
+	string input;
+
+	do {
+		cout << "\n===== Smart Library Management System =====\n";
+		cout << "1. View Books\n";
+		cout << "2. Search Book\n";
+		cout << "3. Borrow Book\n";
+		cout << "4. Return Book\n";
+		cout << "5. Reserve Book\n";
+		cout << "6. Add Book (Librarian)\n";
+		cout << "7. Remove Book (Librarian)\n";
+		cout << "0. Exit\n";
+		cout << "Enter choice: ";
+		cin >> choice;
+		cin.ignore();
+
+		switch (choice) {
+		case 1:
+			library.viewBooks();
+			break;
+
+		case 2:
+			cout << "Enter title or author: ";
+			getline(cin, input);
+			if (library.searchBook(input))
+				library.searchBook(input)->display();
+			else
+				cout << "Book not found\n";
+			break;
+
+		case 3:
+			cout << "Enter title to borrow: ";
+			getline(cin, input);
+			if (Book* book = library.searchBook(input))
+				member.borrowBook(*book);
+			else
+				cout << "Book not found\n";
+			break;
+
+		case 4:
+			cout << "Enter title to return: ";
+			getline(cin, input);
+			if (Book* book = library.searchBook(input))
+				member.returnBook(*book);
+			else
+				cout << "Book not found\n";
+			break;
+
+		case 5:
+			cout << "Enter title to reserve: ";
+			getline(cin, input);
+			if (Book* book = library.searchBook(input))
+				member.reserveBook(*book);
+			else
+				cout << "Book not found\n";
+			break;
+
+		case 6:
+			cout << "Enter new book title: ";
+			getline(cin, input);
+			{
+				string author;
+				cout << "Enter author: ";
+				getline(cin, author);
+				library.addBook(input, author);
+			}
+			break;
+
+		case 7:
+			cout << "Enter title to remove: ";
+			getline(cin, input);
+			library.removeBook(input);
+			break;
+
+		case 0:
+			cout << "Exiting system\n";
+			break;
+
+		default:
+			cout << "Invalid option.\n";
+		}
+	} while (choice != 0);
+
+	return 0;
+}
+*/

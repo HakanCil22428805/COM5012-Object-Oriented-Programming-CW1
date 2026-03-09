@@ -9,6 +9,7 @@ class Member;
 //Book class represents a single book in the library
 class Book {
 private:
+
 	//Stores the title of the book
 	std::string title;
 
@@ -22,6 +23,7 @@ private:
 	Member* reservedBy;
 
 public:
+
 	//Constructor that initialises the book title and author
 	Book(std::string t, std::string a);
 	~Book();

@@ -6,10 +6,12 @@
 //This class will be inherited by Member, Librarian, and Admin
 class User {
 protected:
+
 	//Stores the name of the user
 	std::string name;
 
 public:
+
 	//Constructor that initialises the user's name
 	User(std::string n);
 

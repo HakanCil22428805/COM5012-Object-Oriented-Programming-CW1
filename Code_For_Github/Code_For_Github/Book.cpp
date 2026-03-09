@@ -2,6 +2,8 @@
 #include "Member.h"
 #include <iostream>
 
+//Constructor for book
+//Initialises title, author, and sets borrowedBy and reservedBy to nullptr
 Book::Book(std::string t, std::string a) : title(t), author(a), borrowedBy(nullptr), reservedBy(nullptr) {}
 
 Book::~Book() {}
@@ -25,11 +27,20 @@ void Book::reserve(Member* member) {
 }
 
 void Book::returnBook() {
+	//If someone reserved the book
 	if (reservedBy != nullptr) {
+
+		//Transfers the book to the reserver
 		borrowedBy = reservedBy;
+
+		//Clears the reservation
 		reservedBy = nullptr;
 	}
+
+	//If no reservation exists
 	else {
+
+		//Marks the book as available
 		borrowedBy = nullptr;
 	}
 }

@@ -5,6 +5,7 @@
 
 class Admin : public User {
 public:
+
 	//constructor that takes a name and passes it to the User constructor
 	Admin(std::string n);
 
